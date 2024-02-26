@@ -1,0 +1,1 @@
+# CleanArchitectureWithNET6AndCQRS
