@@ -1,1 +1,1 @@
-# CleanArchitectureWithNET6AndCQRS
+# Clean Architecture With .NET 6 And CQRS
