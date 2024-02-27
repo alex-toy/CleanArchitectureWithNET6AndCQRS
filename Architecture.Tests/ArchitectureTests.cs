@@ -1,8 +1,7 @@
-﻿using Xunit;
-using NetArchTest.Rules;
+﻿using NetArchTest.Rules;
 using System.Reflection;
 
-namespace ArchitectureTests
+namespace Architecture.Tests
 {
     public class ArchitectureTests
     {
@@ -87,6 +86,17 @@ namespace ArchitectureTests
 
             PredicateList handlers = Types.InAssembly(assembly).That().HaveNameEndingWith("Handler");
             TestResult result = handlers.Should().HaveDependencyOnAll(DomainNamespace).GetResult();
+
+            Assert.True(result.IsSuccessful);
+        }
+
+        [Fact]
+        public void Controllers_should_have_dependency_on_MediatR()
+        {
+            Assembly assembly = typeof(Application.AssemblyReference).Assembly;
+
+            PredicateList controllers = Types.InAssembly(assembly).That().HaveNameEndingWith("Controller");
+            TestResult result = controllers.Should().HaveDependencyOn("MediatR").GetResult();
 
             Assert.True(result.IsSuccessful);
         }

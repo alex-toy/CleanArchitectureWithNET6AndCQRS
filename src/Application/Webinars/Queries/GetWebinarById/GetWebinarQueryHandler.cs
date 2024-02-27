@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Application.Abstractions.Messaging;
 using Dapper;
-//using Domain.Exceptions;
+using Domain.Exceptions;
 
 namespace Application.Webinars.Queries.GetWebinarById;
 
@@ -19,7 +19,7 @@ internal sealed class GetWebinarQueryHandler : IQueryHandler<GetWebinarByIdQuery
 
         var webinar = await _dbConnection.QueryFirstOrDefaultAsync<WebinarResponse>(sql, new { request.WebinarId });
 
-        //if (webinar is null) throw new WebinarNotFoundException(request.WebinarId);
+        if (webinar is null) throw new WebinarNotFoundException(request.WebinarId);
 
         return webinar;
     }
