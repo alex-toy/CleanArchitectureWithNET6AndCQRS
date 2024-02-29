@@ -29,44 +29,18 @@ internal sealed class SendInvitationCommandHandler : IRequestHandler<SendInvitat
 
     public async Task<Unit> Handle(SendInvitationCommand request, CancellationToken cancellationToken)
     {
-        var member = await _memberRepository.GetByIdAsync(request.MemberId, cancellationToken);
+        Member? member = await _memberRepository.GetByIdAsync(request.MemberId, cancellationToken);
 
-        var gathering = await _gatheringRepository
-            .GetByIdWithCreatorAsync(request.GatheringId, cancellationToken);
+        Gathering? gathering = await _gatheringRepository.GetByIdWithCreatorAsync(request.GatheringId, cancellationToken);
 
-        if (member is null || gathering is null)
-        {
-            return Unit.Value;
-        }
-        
-        // Validate
-        if (gathering.Creator.Id == member.Id)
-        {
-            throw new Exception("Can't send invitation to the gathering creator.");
-        }
+        if (member is null || gathering is null) return Unit.Value;
 
-        if (gathering.ScheduledAtUtc < DateTime.UtcNow)
-        {
-            throw new Exception("Can't send invitation for gathering in the past.");
-        }
-
-        // Create invitation
-        var invitation = new Invitation
-        {
-            Id = Guid.NewGuid(),
-            MemberId = member.Id,
-            GatheringId = gathering.Id,
-            Status = InvitationStatus.Pending,
-            CreatedOnUtc = DateTime.UtcNow
-        };
-
-        gathering.Invitations.Add(invitation);
+        Invitation invitation = gathering.SendInvitation(member);
 
         _invitationRepository.Add(invitation);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        // Send email
         await _emailService.SendInvitationSentEmailAsync(member, gathering, cancellationToken);
 
         return Unit.Value;

@@ -1,6 +1,7 @@
 ﻿using Gatherly.Domain.Entities;
 using Gatherly.Domain.Repositories;
 using MediatR;
+using System.Xml.Linq;
 
 namespace Gatherly.Application.Gatherings.Commands.CreateGathering;
 
@@ -26,41 +27,12 @@ internal sealed class CreateGatheringCommandHandler : IRequestHandler<CreateGath
 
         if (member is null) return Unit.Value;
 
-        Gathering gathering = Create(request, member);
+        Gathering gathering = Gathering.Create(request.MemberId, member, request.Type, request.ScheduledAtUtc, request.Location, request.Name, request.MaximumNumberOfAttendees, request.InvitationsValidBeforeInHours);
 
         _gatheringRepository.Add(gathering);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Unit.Value;
-    }
-
-    private static Gathering Create(CreateGatheringCommand request, Member? member)
-    {
-        var gathering = new Gathering(Guid.NewGuid(), member, request.Type, request.ScheduledAtUtc, request.Name, request.Location);
-
-        switch (gathering.Type)
-        {
-            case GatheringType.WithFixedNumberOfAttendees:
-                if (request.MaximumNumberOfAttendees is null)
-                {
-                    throw new Exception($"{nameof(request.MaximumNumberOfAttendees)} can't be null.");
-                }
-
-                gathering.MaximumNumberOfAttendees = request.MaximumNumberOfAttendees;
-                break;
-            case GatheringType.WithExpirationForInvitations:
-                if (request.InvitationsValidBeforeInHours is null)
-                {
-                    throw new Exception($"{nameof(request.InvitationsValidBeforeInHours)} can't be null.");
-                }
-
-                gathering.InvitationsExpireAtUtc = gathering.ScheduledAtUtc.AddHours(-request.InvitationsValidBeforeInHours.Value);
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(GatheringType));
-        }
-
-        return gathering;
     }
 }
