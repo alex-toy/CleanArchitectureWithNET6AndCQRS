@@ -1,0 +1,36 @@
+﻿namespace Gatherly.Domain.Entities;
+
+public class Gathering
+{
+    public Gathering(Guid id, Member creator, GatheringType type, DateTime scheduledAtUtc, string? location, string name)
+    {
+        Id = id;
+        Creator = creator;
+        Type = type;
+        ScheduledAtUtc = scheduledAtUtc;
+        Location = location;
+        Name = name;
+    }
+
+    public Guid Id { get; set; }
+
+    public Member Creator { get; set; }
+
+    public GatheringType Type { get; set; }
+
+    public string Name { get; set; }
+
+    public DateTime ScheduledAtUtc { get; set; }
+
+    public string? Location { get; set; }
+
+    public int? MaximumNumberOfAttendees { get; set; }
+
+    public DateTime? InvitationsExpireAtUtc { get; set; }
+
+    public int NumberOfAttendees { get; set; }
+
+    public List<Attendee> Attendees { get; set; }
+
+    public List<Invitation> Invitations { get; set; }
+}
