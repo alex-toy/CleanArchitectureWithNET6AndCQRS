@@ -22,4 +22,20 @@ public class Invitation
         Status = InvitationStatus.Pending;
         CreatedOnUtc = DateTime.UtcNow;
     }
+
+    internal void Expire()
+    {
+        Status = InvitationStatus.Expired;
+        ModifiedOnUtc = DateTime.UtcNow;
+    }
+
+    internal Attendee Accept()
+    {
+        Status = InvitationStatus.Accepted;
+        ModifiedOnUtc = DateTime.UtcNow;
+
+        var attendee = new Attendee(this);
+
+        return attendee;
+    }
 }

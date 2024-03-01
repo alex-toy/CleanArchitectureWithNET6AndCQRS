@@ -18,13 +18,14 @@ public class Gathering
 
     public DateTime? InvitationsExpireAtUtc { get; private set; }
 
-    public int NumberOfAttendees { get; set; }
+    public int NumberOfAttendees { get; private set; }
 
-    public List<Attendee> Attendees { get; set; }
+    public IReadOnlyCollection<Attendee> Attendees => _attendee;
 
     public IReadOnlyCollection<Invitation> Invitations => _invitations;
 
     private readonly List<Invitation> _invitations = new();
+    private readonly List<Attendee> _attendee = new();
 
     private Gathering(Guid id, Member creator, GatheringType type, DateTime scheduledAtUtc, string? location, string name)
     {
@@ -82,5 +83,24 @@ public class Gathering
         _invitations.Add(invitation);
 
         return invitation;
+    }
+
+    public Attendee? AcceptInvitation(Invitation invitation)
+    {
+
+        bool expired = (Type == GatheringType.WithFixedNumberOfAttendees && NumberOfAttendees < MaximumNumberOfAttendees) ||
+                       (Type == GatheringType.WithExpirationForInvitations && InvitationsExpireAtUtc < DateTime.UtcNow);
+
+        if (expired)
+        {
+            invitation.Expire();
+            return null;
+        }
+
+        Attendee attendee = invitation.Accept();
+        _attendee.Add(attendee);
+        NumberOfAttendees++;
+
+        return attendee;
     }
 }

@@ -45,48 +45,18 @@ internal sealed class AcceptInvitationCommandHandler : IRequestHandler<AcceptInv
         var gathering = await _gatheringRepository
             .GetByIdWithCreatorAsync(invitation.GatheringId, cancellationToken);
 
-        if (member is null || gathering is null)
-        {
-            return Unit.Value;
-        }
+        if (member is null || gathering is null) return Unit.Value;
 
-        // Check if expired
-        var expired = (gathering.Type == GatheringType.WithFixedNumberOfAttendees &&
-                       gathering.NumberOfAttendees < gathering.MaximumNumberOfAttendees) ||
-                      (gathering.Type == GatheringType.WithExpirationForInvitations &&
-                       gathering.InvitationsExpireAtUtc < DateTime.UtcNow);
+        Attendee? attendee = gathering.AcceptInvitation(invitation);
 
-        if (expired)
-        {
-            invitation.Status = InvitationStatus.Expired;
-            invitation.ModifiedOnUtc = DateTime.UtcNow;
-        }
-        else
-        {
-            invitation.Status = InvitationStatus.Accepted;
-            invitation.ModifiedOnUtc = DateTime.UtcNow;
-        }
+        if (attendee is not null) _attendeeRepository.Add(attendee);
 
-        // Create attendee
-        var attendee = new Attendee
-        {
-            MemberId = invitation.MemberId,
-            GatheringId = invitation.GatheringId,
-            CreatedOnUtc = DateTime.UtcNow
-        };
-
-        gathering.Attendees.Add(attendee);
-        gathering.NumberOfAttendees++;
-
-        _attendeeRepository.Add(attendee);
-
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-        // Send email
         if (invitation.Status == InvitationStatus.Accepted)
         {
             await _emailService.SendInvitationAcceptedEmailAsync(gathering, cancellationToken);
         }
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Unit.Value;
     }
