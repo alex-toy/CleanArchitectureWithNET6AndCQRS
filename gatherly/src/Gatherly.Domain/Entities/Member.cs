@@ -1,10 +1,18 @@
-﻿namespace Gatherly.Domain.Entities;
+﻿using Gatherly.Domain.Primitives;
+using Gatherly.Domain.ValueObjects;
 
-public class Member
+namespace Gatherly.Domain.Entities;
+
+public sealed class Member : Entity
 {
-    public Guid Id { get; set; }
+    public Member(Guid id, FirstName firstName, string lastName, string email) : base(id)
+    {
+        FirstName = firstName;
+        LastName = lastName;
+        Email = email;
+    }
 
-    public string FirstName { get; set; }
+    public FirstName FirstName { get; set; }
 
     public string LastName { get; set; }
 

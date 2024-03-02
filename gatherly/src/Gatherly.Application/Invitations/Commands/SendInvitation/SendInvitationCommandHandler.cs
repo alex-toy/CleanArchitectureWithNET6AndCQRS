@@ -1,6 +1,7 @@
 ﻿using Gatherly.Application.Abstractions;
 using Gatherly.Domain.Entities;
 using Gatherly.Domain.Repositories;
+using Gatherly.Domain.Shared;
 using MediatR;
 
 namespace Gatherly.Application.Invitations.Commands.SendInvitation;
@@ -35,9 +36,11 @@ internal sealed class SendInvitationCommandHandler : IRequestHandler<SendInvitat
 
         if (member is null || gathering is null) return Unit.Value;
 
-        Invitation invitation = gathering.SendInvitation(member);
+        Result<Invitation> invitationResult = gathering.SendInvitation(member);
 
-        _invitationRepository.Add(invitation);
+        if (invitationResult.IsFailure) return Unit.Value;
+
+        _invitationRepository.Add(invitationResult.Value);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

@@ -5,13 +5,13 @@ using System.Xml.Linq;
 
 namespace Gatherly.Application.Gatherings.Commands.CreateGathering;
 
-internal sealed class CreateGatheringCommandHandler : IRequestHandler<CreateMemberCommand>
+internal sealed class CreateMemberCommandHandler : IRequestHandler<CreateMemberCommand>
 {
     private readonly IMemberRepository _memberRepository;
     private readonly IGatheringRepository _gatheringRepository;
     private readonly IUnitOfWork _unitOfWork;
 
-    public CreateGatheringCommandHandler(
+    public CreateMemberCommandHandler(
         IMemberRepository memberRepository,
         IGatheringRepository gatheringRepository,
         IUnitOfWork unitOfWork)

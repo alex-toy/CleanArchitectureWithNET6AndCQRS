@@ -1,9 +1,10 @@
-﻿namespace Gatherly.Domain.Entities;
+﻿using Gatherly.Domain.Enums;
+using Gatherly.Domain.Primitives;
 
-public class Invitation
+namespace Gatherly.Domain.Entities;
+
+public sealed class Invitation : Entity
 {
-    public Guid Id { get; private set; }
-
     public Guid GatheringId { get; private set; }
 
     public Guid MemberId { get; private set; }
@@ -14,9 +15,8 @@ public class Invitation
 
     public DateTime? ModifiedOnUtc { get; private set; }
 
-    internal Invitation(Guid id, Member member, Gathering gathering)
+    internal Invitation(Guid id, Member member, Gathering gathering) : base(id)
     {
-        Id = id;
         MemberId = member.Id;
         GatheringId = gathering.Id;
         Status = InvitationStatus.Pending;

@@ -3,7 +3,7 @@ using MediatR;
 
 namespace Gatherly.Application.Gatherings.Commands.CreateGathering;
 
-public sealed record CreateGatheringCommand(
+public sealed record CreateMemberCommand(
     Guid MemberId,
     GatheringType Type,
     DateTime ScheduledAtUtc,
