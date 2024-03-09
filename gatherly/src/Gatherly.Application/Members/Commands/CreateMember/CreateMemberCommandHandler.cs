@@ -1,13 +1,13 @@
-﻿using Gatherly.Application.Members.Commands.CreateMember;
+﻿using Gatherly.Application.Abstractions.Messaging;
 using Gatherly.Domain.Entities;
+using Gatherly.Domain.Errors;
 using Gatherly.Domain.Repositories;
 using Gatherly.Domain.Shared;
 using Gatherly.Domain.ValueObjects;
-using MediatR;
 
-namespace Gatherly.Application.Members.Commands.CreateGathering;
+namespace Gatherly.Application.Members.Commands.CreateMember;
 
-internal sealed class CreateMemberCommandHandler : IRequestHandler<CreateMemberCommand>
+internal sealed class CreateMemberCommandHandler : ICommandHandler<CreateMemberCommand, Guid>
 {
     private readonly IMemberRepository _memberRepository;
     private readonly IUnitOfWork _unitOfWork;
@@ -18,15 +18,19 @@ internal sealed class CreateMemberCommandHandler : IRequestHandler<CreateMemberC
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Unit> Handle(CreateMemberCommand request, CancellationToken cancellationToken)
+    public async Task<Result<Guid>> Handle(CreateMemberCommand request, CancellationToken cancellationToken)
     {
+        Result<LastName> lastNameResult = LastName.Create(request.LastName);
         Result<FirstName> firstNameResult = FirstName.Create(request.FirstName);
-        if (firstNameResult.IsFailure) return Unit.Value;
+        Result<Email> emailResult = Email.Create(request.Email);
 
-        var member = new Member(Guid.NewGuid(), firstNameResult.Value, request.LastName, request.Email);
+        bool isEmailUnique = await _memberRepository.IsEmailUniqueAsync(emailResult.Value, cancellationToken);
+        if (!isEmailUnique) return Result.Failure<Guid>(DomainErrors.Member.EmailAlreadyInUse);
+
+        Member member = Member.Create(Guid.NewGuid(), firstNameResult.Value, lastNameResult.Value, emailResult.Value);
         _memberRepository.Add(member);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Unit.Value;
+        return member.Id;
     }
 }

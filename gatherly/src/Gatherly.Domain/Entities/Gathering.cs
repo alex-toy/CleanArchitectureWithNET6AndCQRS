@@ -1,4 +1,5 @@
-﻿using Gatherly.Domain.Enums;
+﻿using Gatherly.Domain.DomainEvents;
+using Gatherly.Domain.Enums;
 using Gatherly.Domain.Errors;
 using Gatherly.Domain.Exceptions;
 using Gatherly.Domain.Primitives;
@@ -6,7 +7,7 @@ using Gatherly.Domain.Shared;
 
 namespace Gatherly.Domain.Entities;
 
-public sealed class Gathering : Entity
+public sealed class Gathering : AggregateRoot
 {
     public Member Creator { get; private set; }
 
@@ -81,9 +82,9 @@ public sealed class Gathering : Entity
 
     public Attendee? AcceptInvitation(Invitation invitation)
     {
-
-        bool expired = (Type == GatheringType.WithFixedNumberOfAttendees && NumberOfAttendees < MaximumNumberOfAttendees) ||
-                       (Type == GatheringType.WithExpirationForInvitations && InvitationsExpireAtUtc < DateTime.UtcNow);
+        bool reachedMaxNumberAttendees = Type == GatheringType.WithFixedNumberOfAttendees && NumberOfAttendees == MaximumNumberOfAttendees;
+        bool reachedInvitationExpiration = Type == GatheringType.WithExpirationForInvitations && InvitationsExpireAtUtc < DateTime.UtcNow;
+        bool expired = reachedMaxNumberAttendees || reachedInvitationExpiration;
 
         if (expired)
         {
@@ -92,6 +93,8 @@ public sealed class Gathering : Entity
         }
 
         Attendee attendee = invitation.Accept();
+        RaiseDomainEvent(new InvitationAcceptedEvent(invitation.Id, Id));
+
         _attendee.Add(attendee);
         NumberOfAttendees++;
 

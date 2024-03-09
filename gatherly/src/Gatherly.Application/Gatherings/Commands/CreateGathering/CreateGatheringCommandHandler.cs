@@ -1,11 +1,10 @@
 ﻿using Gatherly.Domain.Entities;
 using Gatherly.Domain.Repositories;
 using MediatR;
-using System.Xml.Linq;
 
 namespace Gatherly.Application.Gatherings.Commands.CreateGathering;
 
-internal sealed class CreateGatheringCommandHandler : IRequestHandler<CreateMemberCommand>
+internal sealed class CreateGatheringCommandHandler : IRequestHandler<CreateGatheringCommand>
 {
     private readonly IMemberRepository _memberRepository;
     private readonly IGatheringRepository _gatheringRepository;
@@ -21,7 +20,7 @@ internal sealed class CreateGatheringCommandHandler : IRequestHandler<CreateMemb
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Unit> Handle(CreateMemberCommand request, CancellationToken cancellationToken)
+    public async Task<Unit> Handle(CreateGatheringCommand request, CancellationToken cancellationToken)
     {
         Member? member = await _memberRepository.GetByIdAsync(request.MemberId, cancellationToken);
 
