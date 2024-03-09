@@ -30,18 +30,13 @@ public class ProcessOutboxMessagesJob : IJob
 
         foreach (OutboxMessage outboxMessage in messages)
         {
-            IDomainEvent? domainEvent = JsonConvert
-                .DeserializeObject<IDomainEvent>(
-                    outboxMessage.Content,
+            IDomainEvent? domainEvent = JsonConvert.DeserializeObject<IDomainEvent>(outboxMessage.Content,
                     new JsonSerializerSettings
                     {
                         TypeNameHandling = TypeNameHandling.All
                     });
 
-            if (domainEvent is null)
-            {
-                continue;
-            }
+            if (domainEvent is null) continue;
 
             await _publisher.Publish(domainEvent, context.CancellationToken);
 

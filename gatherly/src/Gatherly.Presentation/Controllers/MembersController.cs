@@ -11,8 +11,7 @@ namespace Gatherly.Presentation.Controllers;
 [Route("api/members")]
 public sealed class MembersController : ApiController
 {
-    public MembersController(ISender sender)
-        : base(sender)
+    public MembersController(ISender sender) : base(sender)
     {
     }
 
@@ -27,25 +26,14 @@ public sealed class MembersController : ApiController
     }
 
     [HttpPost]
-    public async Task<IActionResult> RegisterMember(
-        [FromBody] RegisterMemberRequest request,
-        CancellationToken cancellationToken)
+    public async Task<IActionResult> RegisterMember([FromBody] RegisterMemberRequest request, CancellationToken cancellationToken)
     {
-        var command = new CreateMemberCommand(
-            request.Email,
-            request.FirstName,
-            request.LastName);
+        var command = new CreateMemberCommand (request.FirstName, request.LastName, request.Email);
 
         Result<Guid> result = await Sender.Send(command, cancellationToken);
 
-        if (result.IsFailure)
-        {
-            return BadRequest(result.Error);
-        }
+        if (result.IsFailure) return BadRequest(result.Error);
         
-        return CreatedAtAction(
-            nameof(GetMemberById),
-            new { id = result.Value },
-            result.Value);
+        return CreatedAtAction (nameof(GetMemberById), new { id = result.Value }, result.Value);
     }
 }
