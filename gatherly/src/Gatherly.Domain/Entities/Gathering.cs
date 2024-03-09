@@ -41,6 +41,10 @@ public sealed class Gathering : AggregateRoot
         Name = name;
     }
 
+    private Gathering()
+    {
+    }
+
     public static Gathering Create(Guid id, Member member, GatheringType type, DateTime scheduledAtUtc, string? location, string name, int? maxAttendeeCount, int? invitationsValidBeforeInHours)
     {
         var gathering = new Gathering(Guid.NewGuid(), member, type, scheduledAtUtc, location, name);

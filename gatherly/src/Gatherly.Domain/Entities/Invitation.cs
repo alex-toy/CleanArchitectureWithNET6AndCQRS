@@ -23,6 +23,10 @@ public sealed class Invitation : Entity
         CreatedOnUtc = DateTime.UtcNow;
     }
 
+    private Invitation()
+    {
+    }
+
     internal void Expire()
     {
         Status = InvitationStatus.Expired;
