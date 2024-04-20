@@ -18,7 +18,7 @@ public sealed class MembersController : ApiController
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetMemberById(Guid id, CancellationToken cancellationToken)
     {
-        var query = new GetMemberByIdQuery(id);
+        GetMemberByIdQuery query = new (id);
 
         Result<MemberResponse> response = await Sender.Send(query, cancellationToken);
 
@@ -28,11 +28,11 @@ public sealed class MembersController : ApiController
     [HttpPost]
     public async Task<IActionResult> RegisterMember([FromBody] RegisterMemberRequest request, CancellationToken cancellationToken)
     {
-        var command = new CreateMemberCommand (request.FirstName, request.LastName, request.Email);
+        CreateMemberCommand command = new(request.FirstName, request.LastName, request.Email);
 
         Result<Guid> result = await Sender.Send(command, cancellationToken);
 
-        if (result.IsFailure) return BadRequest(result.Error);
+        if (result.IsFailure) return HandleFailure(result);
         
         return CreatedAtAction (nameof(GetMemberById), new { id = result.Value }, result.Value);
     }
